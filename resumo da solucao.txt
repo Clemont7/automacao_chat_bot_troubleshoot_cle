@@ -1,0 +1,32 @@
+Resumo da solução
+Problema: As equipas de IT em bancos enfrentam retrabalho e demora na resolução de incidentes porque a informação está dispersa em diferentes sistemas.
+
+Proposta: Criar uma Knowledge Base centralizada que consolide dados de incidentes, bugs e soluções, integrada com um Chatbot inteligente capaz de responder rapidamente às perguntas dos técnicos.
+
+Extensão personalizada: Para facilitar o acesso, será desenvolvida uma extensão de navegador dedicada, que permitirá aos técnicos consultar a Knowledge Base e interagir com o Chatbot diretamente no browser, sem precisar abrir sistemas adicionais.
+
+Arquitetura:
+
+Fontes: sistemas de suporte (Remedy, GitLab, Service Desk).
+
+Integração: ETL/API para padronizar dados.
+
+Armazenamento: JSON/SQL para consulta e relatórios.
+
+Inteligência: Chatbot AI + dashboards em Power BI.
+
+Acesso: extensão de navegador personalizada para uso prático.
+
+Segurança: controlo de acessos e monitoramento.
+
+Benefícios:
+
+Redução do tempo de troubleshooting.
+
+Preservação da memória institucional.
+
+Maior eficiência e escalabilidade.
+
+Conformidade e segurança regulatória.
+
+Acesso simplificado via extensão, aumentando a usabilidade.

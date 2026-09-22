@@ -1,0 +1,153 @@
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
+  width: 360px;
+  margin: 0;
+  background: #1e1e2f;
+  color: #f0f0f5;
+}
+
+header {
+  background: #12121c;
+  padding: 12px 16px;
+}
+
+header h1 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #33334d;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 8px;
+  background: none;
+  border: none;
+  color: #a0a0b8;
+  cursor: pointer;
+  font-size: 12px;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-btn.active {
+  color: #ff4d4d;
+  border-bottom: 2px solid #ff4d4d;
+}
+
+.tab-content {
+  display: none;
+  padding: 12px;
+  min-height: 260px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+#chat-window {
+  height: 190px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.msg {
+  padding: 6px 10px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  max-width: 85%;
+  line-height: 1.4;
+}
+
+.msg.user {
+  background: #ff4d4d;
+  color: #fff;
+  margin-left: auto;
+}
+
+.msg.bot {
+  background: #2b2b40;
+  color: #f0f0f5;
+}
+
+.input-row {
+  display: flex;
+  gap: 6px;
+}
+
+input[type="text"], textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #33334d;
+  background: #12121c;
+  color: #f0f0f5;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 50px;
+}
+
+button {
+  background: #ff4d4d;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+button:hover {
+  background: #e63e3e;
+}
+
+#search-results .result-item {
+  background: #2b2b40;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.result-item .title {
+  font-weight: bold;
+  color: #ff4d4d;
+  margin-bottom: 4px;
+}
+
+footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #12121c;
+  font-size: 11px;
+  color: #a0a0b8;
+}
+
+#status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+#status-dot.online {
+  background: #4dff88;
+}
+
+#status-dot.offline {
+  background: #ff4d4d;
+}

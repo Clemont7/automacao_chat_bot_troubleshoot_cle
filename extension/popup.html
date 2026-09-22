@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>IT Troubleshooting KB</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <h1>🛠️ Troubleshooting KB</h1>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="chat">Chatbot</button>
+    <button class="tab-btn" data-tab="search">Pesquisar</button>
+    <button class="tab-btn" data-tab="new">Novo Incidente</button>
+  </nav>
+
+  <section id="tab-chat" class="tab-content active">
+    <div id="chat-window"></div>
+    <div class="input-row">
+      <input type="text" id="chat-input" placeholder="Descreve o problema..." />
+      <button id="chat-send">Enviar</button>
+    </div>
+  </section>
+
+  <section id="tab-search" class="tab-content">
+    <div class="input-row">
+      <input type="text" id="search-input" placeholder="Pesquisar por palavra-chave..." />
+      <button id="search-btn">Buscar</button>
+    </div>
+    <div id="search-results"></div>
+  </section>
+
+  <section id="tab-new" class="tab-content">
+    <input type="text" id="new-title" placeholder="Título" />
+    <textarea id="new-description" placeholder="Descrição do problema"></textarea>
+    <textarea id="new-solution" placeholder="Solução aplicada"></textarea>
+    <input type="text" id="new-source" placeholder="Sistema de origem (ex: Remedy, GitLab)" />
+    <input type="text" id="new-tags" placeholder="Tags separadas por vírgula" />
+    <button id="new-submit">Guardar Incidente</button>
+    <div id="new-feedback"></div>
+  </section>
+
+  <footer>
+    <span id="status-dot" class="offline"></span>
+    <span id="status-text">A verificar ligação ao servidor...</span>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
