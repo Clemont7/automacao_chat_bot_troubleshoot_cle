@@ -1,5 +1,26 @@
 const API_BASE = "http://localhost:5000/api";
 
+// --- Menu (hamburger) ---
+const menuToggle = document.getElementById("menu-toggle");
+const tabsMenu = document.getElementById("tabs-menu");
+
+function closeMenu() {
+  tabsMenu.classList.remove("open");
+  menuToggle.setAttribute("aria-expanded", "false");
+}
+
+menuToggle.addEventListener("click", (e) => {
+  e.stopPropagation();
+  const isOpen = tabsMenu.classList.toggle("open");
+  menuToggle.setAttribute("aria-expanded", String(isOpen));
+});
+
+document.addEventListener("click", (e) => {
+  if (!tabsMenu.contains(e.target) && e.target !== menuToggle) {
+    closeMenu();
+  }
+});
+
 // --- Navegação entre abas ---
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -7,6 +28,7 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
     document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+    closeMenu();
   });
 });
 

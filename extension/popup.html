@@ -8,13 +8,14 @@
 <body>
   <header>
     <h1>🤖 Troubleshooting KB</h1>
-  </header>
+    <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menu" aria-expanded="false">☰</button>
 
-  <nav class="tabs">
-    <button class="tab-btn active" data-tab="chat">Chatbot</button>
-    <button class="tab-btn" data-tab="search">Pesquisar</button>
-    <button class="tab-btn" data-tab="new">Novo Incidente</button>
-  </nav>
+    <nav class="tabs" id="tabs-menu">
+      <button class="tab-btn active" data-tab="chat">💬 Chatbot</button>
+      <button class="tab-btn" data-tab="search">🔍 Pesquisar</button>
+      <button class="tab-btn" data-tab="new">➕ Novo Incidente</button>
+    </nav>
+  </header>
 
   <section id="tab-chat" class="tab-content active">
     <div id="chat-window"></div>
