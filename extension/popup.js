@@ -35,18 +35,17 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
 // --- Healthcheck do backend ---
 async function checkStatus() {
   const dot = document.getElementById("status-dot");
-  const text = document.getElementById("status-text");
   try {
     const res = await fetch(`${API_BASE}/health`);
     if (res.ok) {
       dot.className = "online";
-      text.textContent = "Servidor conectado";
+      dot.title = "Servidor conectado";
       return;
     }
     throw new Error("bad status");
   } catch (e) {
     dot.className = "offline";
-    text.textContent = "Servidor offline (corre o Flask em localhost:5000)";
+    dot.title = "Servidor offline (corre o Flask em localhost:5000)";
   }
 }
 checkStatus();
