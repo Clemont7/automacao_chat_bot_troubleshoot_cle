@@ -12,17 +12,34 @@ let currentSession = null;
 
 // --- Sessão (chrome.storage.session: apaga-se ao fechar o browser) ---
 // A palavra-passe nunca é guardada; só o utilizador (e o token, se a API devolver um).
+// Se a permissão "storage" ainda não estiver ativa (extensão não recarregada depois de
+// atualizar o manifest.json), usa memória: o login funciona, mas perde-se ao fechar o painel.
+const sessionStore =
+  typeof chrome !== "undefined" && chrome.storage && chrome.storage.session
+    ? chrome.storage.session
+    : null;
+let memorySession = null;
+
+if (!sessionStore) {
+  console.warn(
+    'chrome.storage indisponível: recarrega a extensão em chrome://extensions (botão ⟳) para ativar a permissão "storage".'
+  );
+}
+
 async function getSession() {
-  const stored = await chrome.storage.session.get(SESSION_KEY);
+  if (!sessionStore) return memorySession;
+  const stored = await sessionStore.get(SESSION_KEY);
   return stored[SESSION_KEY] || null;
 }
 
 async function saveSession(session) {
-  await chrome.storage.session.set({ [SESSION_KEY]: session });
+  memorySession = session;
+  if (sessionStore) await sessionStore.set({ [SESSION_KEY]: session });
 }
 
 async function clearSession() {
-  await chrome.storage.session.remove(SESSION_KEY);
+  memorySession = null;
+  if (sessionStore) await sessionStore.remove(SESSION_KEY);
 }
 
 // --- Login ---
