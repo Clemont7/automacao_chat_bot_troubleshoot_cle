@@ -1,7 +1,7 @@
 """
 database.py
 Camada simples de acesso a dados usando SQLite.
-Guarda incidentes/soluções da Knowledge Base.
+Guarda incidentes/soluções da Knowledge Base e os tickets atribuídos a cada utilizador.
 """
 import sqlite3
 import os
@@ -28,6 +28,21 @@ def init_db():
             solution TEXT NOT NULL,
             source_system TEXT DEFAULT 'Manual',
             tags TEXT DEFAULT '',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS tickets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ticket_id TEXT NOT NULL UNIQUE,
+            title TEXT NOT NULL,
+            description TEXT DEFAULT '',
+            status TEXT DEFAULT 'Atribuído',
+            priority TEXT DEFAULT 'Média',
+            assigned_to TEXT NOT NULL,
+            source_system TEXT DEFAULT 'Remedy',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
         """
@@ -73,6 +88,53 @@ def seed_if_empty():
             VALUES (?, ?, ?, ?, ?)
             """,
             sample_data,
+        )
+        conn.commit()
+
+    # Tickets de demonstração (atribuídos ao utilizador fictício "DEMO").
+    # Serão substituídos por tickets reais quando existir o conector do Remedy.
+    cursor.execute("SELECT COUNT(*) as total FROM tickets")
+    if cursor.fetchone()["total"] == 0:
+        demo_tickets = [
+            (
+                "INC000000100001",
+                "Utilizador sem acesso ao Service Desk",
+                "Cliente reporta erro 401 ao abrir o portal depois da renovação da palavra-passe.",
+                "Atribuído",
+                "Alta",
+                "DEMO",
+            ),
+            (
+                "INC000000100002",
+                "Timeout na integração com o Remedy",
+                "Chamadas à API demoram mais de 30s em horário de pico.",
+                "Em curso",
+                "Crítica",
+                "DEMO",
+            ),
+            (
+                "INC000000100003",
+                "Pedido de acesso ao repositório GitLab",
+                "Novo colaborador precisa de acesso de leitura ao grupo de inovação.",
+                "Pendente",
+                "Baixa",
+                "DEMO",
+            ),
+            (
+                "INC000000100004",
+                "Extensão do browser não carrega no Edge",
+                "Política da empresa bloqueia o modo de programador.",
+                "Atribuído",
+                "Média",
+                "DEMO",
+            ),
+        ]
+        cursor.executemany(
+            """
+            INSERT INTO tickets (ticket_id, title, description, status, priority, assigned_to)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            demo_tickets,
         )
         conn.commit()
 

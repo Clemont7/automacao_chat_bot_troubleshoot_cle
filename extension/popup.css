@@ -61,7 +61,8 @@ header {
   display: flex;
 }
 
-.tab-btn {
+.tab-btn,
+.menu-item {
   display: block;
   width: 100%;
   text-align: left;
@@ -73,7 +74,8 @@ header {
   font-size: 13px;
 }
 
-.tab-btn:hover {
+.tab-btn:hover,
+.menu-item:hover {
   background: #2b2b40;
 }
 
@@ -127,7 +129,7 @@ header {
   gap: 6px;
 }
 
-input[type="text"], textarea {
+input[type="text"], input[type="password"], textarea {
   width: 100%;
   padding: 6px 8px;
   border-radius: 6px;
@@ -194,4 +196,176 @@ footer {
 
 #status-dot.offline {
   background: #ff4d4d;
+}
+
+/* --- Layout: login e app ocupam a altura toda --- */
+[hidden] {
+  display: none !important;
+}
+
+.app-view {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Menu: utilizador + terminar sessão --- */
+.menu-user {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #a0a0b8;
+  border-bottom: 1px solid #33334d;
+}
+
+.menu-logout {
+  border-top: 1px solid #33334d;
+  color: #ff8a8a;
+}
+
+/* --- Login --- */
+.login-view {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 300px;
+  text-align: center;
+}
+
+.login-logo {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+}
+
+.login-card h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.login-sub {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: #a0a0b8;
+}
+
+.login-card input {
+  text-align: left;
+}
+
+.login-card button {
+  width: 100%;
+  padding: 8px 12px;
+}
+
+.login-card button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.login-error {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #ff8a8a;
+  min-height: 16px;
+}
+
+/* --- Minha Fila --- */
+.queue-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.queue-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.icon-btn {
+  background: none;
+  color: #d0d0e0;
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 8px;
+}
+
+.icon-btn:hover {
+  background: #2b2b40;
+}
+
+.queue-banner {
+  background: #2a3350;
+  border: 1px solid #3b82f6;
+  color: #cfe0ff;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+.queue-note {
+  font-size: 12px;
+  color: #a0a0b8;
+  padding: 8px 0;
+}
+
+.ticket {
+  background: #2b2b40;
+  border-left: 3px solid #6b7a99;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.ticket.priority-critical { border-left-color: #ff4d4d; }
+.ticket.priority-high     { border-left-color: #ff9f43; }
+.ticket.priority-medium   { border-left-color: #3b82f6; }
+.ticket.priority-low      { border-left-color: #6b7a99; }
+
+.ticket-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.ticket-id {
+  font-weight: 600;
+  color: #3b82f6;
+  font-size: 11px;
+}
+
+.ticket-status {
+  background: #12121c;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 10px;
+  color: #d0d0e0;
+  white-space: nowrap;
+}
+
+.ticket-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.ticket-desc {
+  color: #c0c0d0;
+  line-height: 1.35;
+}
+
+.ticket-meta {
+  margin-top: 6px;
+  font-size: 10px;
+  color: #a0a0b8;
 }

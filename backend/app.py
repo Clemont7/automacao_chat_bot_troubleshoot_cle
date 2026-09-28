@@ -8,7 +8,10 @@ Endpoints:
     POST /api/incidents           -> cria um novo incidente/solução
     GET  /api/search?q=termo      -> busca incidentes por palavra-chave
     POST /api/chat                -> chatbot simples baseado em keyword-matching
+    GET  /api/my-queue?user=ANUM  -> tickets (Remedy) atribuídos ao utilizador
 """
+import os
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -17,6 +20,24 @@ from database import get_connection, init_db, seed_if_empty
 app = Flask(__name__)
 # CORS liberado para a extensão de navegador poder chamar a API localmente.
 CORS(app)
+
+
+# Enquanto não existir o conector do Remedy, quem não tem tickets vê tickets de
+# demonstração (atribuídos a "DEMO"). Desligar com SHOW_DEMO_TICKETS=0.
+DEMO_ASSIGNEE = "DEMO"
+SHOW_DEMO_TICKETS = os.environ.get("SHOW_DEMO_TICKETS", "1") == "1"
+
+TICKET_ORDER = """
+    ORDER BY
+        CASE priority
+            WHEN 'Crítica' THEN 0
+            WHEN 'Alta' THEN 1
+            WHEN 'Média' THEN 2
+            WHEN 'Baixa' THEN 3
+            ELSE 4
+        END,
+        created_at DESC
+"""
 
 
 def row_to_dict(row):
@@ -88,6 +109,42 @@ def search_incidents():
     conn.close()
 
     return jsonify([row_to_dict(r) for r in rows])
+
+
+@app.route("/api/my-queue", methods=["GET"])
+def my_queue():
+    """
+    Devolve os tickets atribuídos ao utilizador (parâmetro ?user=ANUMBER).
+    NOTA: protótipo local - o utilizador vem da extensão e ainda não é
+    validado aqui no servidor. Antes de expor fora de localhost, validar o
+    token do autenticador.
+    """
+    user = request.args.get("user", "").strip()
+    if not user:
+        return jsonify({"error": "Parâmetro 'user' em falta"}), 400
+
+    conn = get_connection()
+    rows = conn.execute(
+        f"SELECT * FROM tickets WHERE UPPER(assigned_to) = UPPER(?) {TICKET_ORDER}",
+        (user,),
+    ).fetchall()
+
+    is_demo = False
+    if not rows and SHOW_DEMO_TICKETS:
+        rows = conn.execute(
+            f"SELECT * FROM tickets WHERE assigned_to = ? {TICKET_ORDER}",
+            (DEMO_ASSIGNEE,),
+        ).fetchall()
+        is_demo = True
+    conn.close()
+
+    return jsonify(
+        {
+            "user": user,
+            "is_demo": is_demo,
+            "tickets": [row_to_dict(r) for r in rows],
+        }
+    )
 
 
 @app.route("/api/chat", methods=["POST"])

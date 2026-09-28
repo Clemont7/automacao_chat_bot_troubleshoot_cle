@@ -6,45 +6,63 @@
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
-  <header>
-    <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menu" aria-expanded="false">☰</button>
+  <!-- Ecrã de login (visível enquanto não existir sessão) -->
+  <section id="login-view" class="login-view" hidden>
+    <div class="login-card">
+      <img src="icons/icon48.png" alt="" class="login-logo" />
+      <h2>Iniciar sessão</h2>
+      <p class="login-sub">Usa o teu número e palavra-passe do banco.</p>
 
-    <nav class="tabs" id="tabs-menu">
-      <button class="tab-btn active" data-tab="chat">💬 Chatbot</button>
-      <button class="tab-btn" data-tab="search">🔍 Pesquisar</button>
-      <button class="tab-btn" data-tab="new">➕ Novo Incidente</button>
-    </nav>
-  </header>
-
-  <section id="tab-chat" class="tab-content active">
-    <div id="chat-window"></div>
-    <div class="input-row">
-      <input type="text" id="chat-input" placeholder="Descreve o problema..." />
-      <button id="chat-send">Enviar</button>
+      <input type="text" id="login-username" placeholder="Número (ex: A123456)" autocomplete="username" spellcheck="false" />
+      <input type="password" id="login-password" placeholder="Palavra-passe" autocomplete="current-password" />
+      <button id="login-submit">Entrar</button>
+      <div id="login-error" class="login-error" role="alert"></div>
     </div>
   </section>
 
-  <section id="tab-search" class="tab-content">
-    <div class="input-row">
-      <input type="text" id="search-input" placeholder="Pesquisar por palavra-chave..." />
-      <button id="search-btn">Buscar</button>
-    </div>
-    <div id="search-results"></div>
-  </section>
+  <!-- Aplicação (visível só com sessão iniciada) -->
+  <div id="app-view" class="app-view" hidden>
+    <header>
+      <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menu" aria-expanded="false">☰</button>
 
-  <section id="tab-new" class="tab-content">
-    <input type="text" id="new-title" placeholder="Título" />
-    <textarea id="new-description" placeholder="Descrição do problema"></textarea>
-    <textarea id="new-solution" placeholder="Solução aplicada"></textarea>
-    <input type="text" id="new-source" placeholder="Sistema de origem (ex: Remedy, GitLab)" />
-    <input type="text" id="new-tags" placeholder="Tags separadas por vírgula" />
-    <button id="new-submit">Guardar Incidente</button>
-    <div id="new-feedback"></div>
-  </section>
+      <nav class="tabs" id="tabs-menu">
+        <div class="menu-user" id="menu-user"></div>
+        <button class="tab-btn active" data-tab="chat">💬 Chatbot</button>
+        <button class="tab-btn" data-tab="search">🔍 Pesquisar</button>
+        <button class="tab-btn" data-tab="queue">📥 Minha Fila</button>
+        <button class="menu-item menu-logout" id="logout-btn">🚪 Terminar sessão</button>
+      </nav>
+    </header>
 
-  <footer>
-    <span id="status-dot" class="offline" title="A verificar ligação ao servidor..."></span>
-  </footer>
+    <section id="tab-chat" class="tab-content active">
+      <div id="chat-window"></div>
+      <div class="input-row">
+        <input type="text" id="chat-input" placeholder="Descreve o problema..." />
+        <button id="chat-send">Enviar</button>
+      </div>
+    </section>
+
+    <section id="tab-search" class="tab-content">
+      <div class="input-row">
+        <input type="text" id="search-input" placeholder="Pesquisar por palavra-chave..." />
+        <button id="search-btn">Buscar</button>
+      </div>
+      <div id="search-results"></div>
+    </section>
+
+    <section id="tab-queue" class="tab-content">
+      <div class="queue-toolbar">
+        <span class="queue-title">Minha Fila</span>
+        <button id="queue-refresh" class="icon-btn" title="Atualizar" aria-label="Atualizar fila">⟳</button>
+      </div>
+      <div id="queue-banner" class="queue-banner" hidden></div>
+      <div id="queue-list"></div>
+    </section>
+
+    <footer>
+      <span id="status-dot" class="offline" title="A verificar ligação ao servidor..."></span>
+    </footer>
+  </div>
 
   <script src="popup.js"></script>
 </body>

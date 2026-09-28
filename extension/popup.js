@@ -1,5 +1,150 @@
 const API_BASE = "http://localhost:5000/api";
 
+// Mesmo endpoint de autenticação usado pela plataforma Nota de Saída.
+const AUTH_URL = "http://10.245.207.70:99/authenticator/login";
+const AUTH_CHANNEL = "RAO";
+const SESSION_KEY = "kbSession";
+
+const loginView = document.getElementById("login-view");
+const appView = document.getElementById("app-view");
+
+let currentSession = null;
+
+// --- Sessão (chrome.storage.session: apaga-se ao fechar o browser) ---
+// A palavra-passe nunca é guardada; só o utilizador (e o token, se a API devolver um).
+async function getSession() {
+  const stored = await chrome.storage.session.get(SESSION_KEY);
+  return stored[SESSION_KEY] || null;
+}
+
+async function saveSession(session) {
+  await chrome.storage.session.set({ [SESSION_KEY]: session });
+}
+
+async function clearSession() {
+  await chrome.storage.session.remove(SESSION_KEY);
+}
+
+// --- Login ---
+const loginUsername = document.getElementById("login-username");
+const loginPassword = document.getElementById("login-password");
+const loginSubmit = document.getElementById("login-submit");
+const loginError = document.getElementById("login-error");
+
+function extractToken(body) {
+  if (!body || typeof body !== "object") return null;
+  const data = body.data && typeof body.data === "object" ? body.data : {};
+  const candidates = [
+    body.token, body.accessToken, body.access_token, body.jwt,
+    data.token, data.accessToken, data.access_token,
+  ];
+  return candidates.find((t) => typeof t === "string" && t) || null;
+}
+
+function extractErrorMessage(body) {
+  if (!body || typeof body !== "object") return null;
+  const msg = body.message || body.error || body.description || body.errorMessage;
+  return typeof msg === "string" && msg ? msg : null;
+}
+
+async function authenticate(username, password) {
+  let res;
+  try {
+    res = await fetch(AUTH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username,
+        password,
+        channel: AUTH_CHANNEL,
+        traceId: crypto.randomUUID(),
+      }),
+    });
+  } catch (e) {
+    throw new Error(
+      "Não foi possível contactar o servidor de autenticação. Verifica se estás ligado à rede/VPN do banco."
+    );
+  }
+
+  let body = null;
+  try {
+    body = await res.json();
+  } catch (e) {
+    // resposta sem JSON - tratamos só pelo código HTTP
+  }
+
+  const failedInBody = body && typeof body === "object" && body.success === false;
+  if (!res.ok || failedInBody) {
+    const fallback =
+      res.status === 401 || res.status === 403
+        ? "Credenciais inválidas."
+        : `Falha no login (HTTP ${res.status}).`;
+    throw new Error(extractErrorMessage(body) || fallback);
+  }
+
+  return { username, token: extractToken(body), loggedInAt: Date.now() };
+}
+
+async function handleLogin() {
+  const username = loginUsername.value.trim();
+  const password = loginPassword.value;
+
+  loginError.textContent = "";
+  if (!username || !password) {
+    loginError.textContent = "Preenche o número e a palavra-passe.";
+    return;
+  }
+
+  loginSubmit.disabled = true;
+  loginSubmit.textContent = "A entrar...";
+  try {
+    const session = await authenticate(username, password);
+    await saveSession(session);
+    loginPassword.value = "";
+    enterApp(session);
+  } catch (e) {
+    loginError.textContent = e.message;
+  } finally {
+    loginPassword.value = "";
+    loginSubmit.disabled = false;
+    loginSubmit.textContent = "Entrar";
+  }
+}
+
+loginSubmit.addEventListener("click", handleLogin);
+[loginUsername, loginPassword].forEach((input) =>
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") handleLogin();
+  })
+);
+
+function enterApp(session) {
+  currentSession = session;
+  document.getElementById("menu-user").textContent = `👤 ${session.username}`;
+  loginView.hidden = true;
+  appView.hidden = false;
+  activateTab("chat");
+  checkStatus();
+}
+
+async function logout() {
+  await clearSession();
+  currentSession = null;
+  chatWindow.replaceChildren();
+  searchResults.replaceChildren();
+  searchInput.value = "";
+  chatInput.value = "";
+  queueList.replaceChildren();
+  closeMenu();
+  appView.hidden = true;
+  loginView.hidden = false;
+  loginUsername.value = "";
+  loginError.textContent = "";
+  loginUsername.focus();
+}
+
+document.getElementById("logout-btn").addEventListener("click", logout);
+
 // --- Menu (hamburger) ---
 const menuToggle = document.getElementById("menu-toggle");
 const tabsMenu = document.getElementById("tabs-menu");
@@ -21,13 +166,20 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// --- Navegação entre abas ---
+// --- Navegação entre secções ---
+function activateTab(name) {
+  document.querySelectorAll(".tab-btn").forEach((b) =>
+    b.classList.toggle("active", b.dataset.tab === name)
+  );
+  document.querySelectorAll(".tab-content").forEach((c) =>
+    c.classList.toggle("active", c.id === `tab-${name}`)
+  );
+  if (name === "queue") loadQueue();
+}
+
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
-    document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+    activateTab(btn.dataset.tab);
     closeMenu();
   });
 });
@@ -48,7 +200,6 @@ async function checkStatus() {
     dot.title = "Servidor offline (corre o Flask em localhost:5000)";
   }
 }
-checkStatus();
 
 // --- Chat ---
 const chatWindow = document.getElementById("chat-window");
@@ -128,43 +279,84 @@ searchInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") runSearch();
 });
 
-// --- Novo incidente ---
-const newSubmit = document.getElementById("new-submit");
-const newFeedback = document.getElementById("new-feedback");
+// --- Minha Fila ---
+const queueList = document.getElementById("queue-list");
+const queueBanner = document.getElementById("queue-banner");
 
-newSubmit.addEventListener("click", async () => {
-  const payload = {
-    title: document.getElementById("new-title").value.trim(),
-    description: document.getElementById("new-description").value.trim(),
-    solution: document.getElementById("new-solution").value.trim(),
-    source_system: document.getElementById("new-source").value.trim() || "Manual",
-    tags: document.getElementById("new-tags").value.trim(),
-  };
+const PRIORITY_CLASS = {
+  "crítica": "critical",
+  "alta": "high",
+  "média": "medium",
+  "baixa": "low",
+};
 
-  if (!payload.title || !payload.description || !payload.solution) {
-    newFeedback.textContent = "Preenche pelo menos título, descrição e solução.";
-    return;
-  }
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined && text !== null) node.textContent = text;
+  return node;
+}
+
+function renderTicket(t) {
+  const priorityKey = PRIORITY_CLASS[String(t.priority || "").toLowerCase()] || "low";
+  const card = el("div", `ticket priority-${priorityKey}`);
+
+  const head = el("div", "ticket-head");
+  head.appendChild(el("span", "ticket-id", t.ticket_id));
+  head.appendChild(el("span", "ticket-status", t.status || "—"));
+  card.appendChild(head);
+
+  card.appendChild(el("div", "ticket-title", t.title));
+  if (t.description) card.appendChild(el("div", "ticket-desc", t.description));
+
+  const created = t.created_at ? String(t.created_at).slice(0, 16) : "";
+  const meta = [`Prioridade: ${t.priority || "—"}`, t.source_system, created]
+    .filter(Boolean)
+    .join(" · ");
+  card.appendChild(el("div", "ticket-meta", meta));
+  return card;
+}
+
+async function loadQueue() {
+  if (!currentSession) return;
+
+  queueBanner.hidden = true;
+  queueList.replaceChildren(el("div", "queue-note", "A carregar..."));
 
   try {
-    const res = await fetch(`${API_BASE}/incidents`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const res = await fetch(
+      `${API_BASE}/my-queue?user=${encodeURIComponent(currentSession.username)}`
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
-    if (res.ok) {
-      newFeedback.textContent = "Incidente guardado com sucesso!";
-      document.getElementById("new-title").value = "";
-      document.getElementById("new-description").value = "";
-      document.getElementById("new-solution").value = "";
-      document.getElementById("new-source").value = "";
-      document.getElementById("new-tags").value = "";
-    } else {
-      newFeedback.textContent = data.error || "Erro ao guardar incidente.";
+    if (data.is_demo) {
+      queueBanner.textContent =
+        "Dados de exemplo: a ligação ao Remedy ainda não está configurada.";
+      queueBanner.hidden = false;
     }
+
+    if (!data.tickets.length) {
+      queueList.replaceChildren(el("div", "queue-note", "Não tens tickets atribuídos. 🎉"));
+      return;
+    }
+    queueList.replaceChildren(...data.tickets.map(renderTicket));
   } catch (e) {
-    newFeedback.textContent = "Erro ao contactar o servidor.";
+    queueList.replaceChildren(
+      el("div", "queue-note", "Erro ao carregar a fila. Verifica se o Flask está a correr.")
+    );
   }
-});
+}
+
+document.getElementById("queue-refresh").addEventListener("click", loadQueue);
+
+// --- Arranque: mostra login ou app conforme haja sessão ---
+(async function init() {
+  const session = await getSession();
+  if (session) {
+    enterApp(session);
+  } else {
+    loginView.hidden = false;
+    loginUsername.focus();
+  }
+})();

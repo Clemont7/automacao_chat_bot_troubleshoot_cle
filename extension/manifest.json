@@ -21,8 +21,12 @@
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["sidePanel"],
+  "permissions": [
+    "sidePanel",
+    "storage"
+  ],
   "host_permissions": [
-    "http://localhost:5000/*"
+    "http://localhost:5000/*",
+    "http://10.245.207.70:99/*"
   ]
 }

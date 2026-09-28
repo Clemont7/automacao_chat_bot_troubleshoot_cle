@@ -15,7 +15,7 @@ chatbot-troubleshooting/
 │   └── kb.db              # Criado automaticamente na 1ª execução
 └── extension/
     ├── manifest.json     # Configuração da extensão (Manifest V3)
-    ├── popup.html         # Interface (Chat / Pesquisa / Novo Incidente)
+    ├── popup.html         # Interface (Login / Chat / Pesquisa / Minha Fila)
     ├── popup.css
     ├── popup.js           # Lógica que chama a API Flask
     └── icons/             # Ícones da extensão
@@ -70,26 +70,34 @@ chatbot-troubleshooting/
 2. Ativa o **Modo de programador / Developer mode** (canto superior direito).
 3. Clica em **Carregar sem compactação / Load unpacked**.
 4. Seleciona a pasta `chatbot-troubleshooting/extension`.
-5. O ícone "KB" vai aparecer na barra de extensões. Clica nele para abrir o
-   popup.
+5. O ícone de bot vai aparecer na barra de extensões. Clica nele para abrir o
+   painel lateral e inicia sessão.
 
-Se o indicador no rodapé do popup mostrar "Servidor offline", confirma que o
-`python app.py` ainda está a correr no terminal.
+Se o indicador (bolinha) no rodapé do painel estiver vermelho, o servidor está
+offline: confirma que o `python app.py` ainda está a correr no terminal.
 
 ## 3. Funcionalidades incluídas neste starter
 
+- **Login**: a extensão pede o número e a palavra-passe e autentica no mesmo
+  endpoint da plataforma Nota de Saída
+  (`POST http://10.245.207.70:99/authenticator/login`, canal `RAO`). Requer
+  estar na rede/VPN do banco. A sessão vive em `chrome.storage.session`
+  (apaga-se ao fechar o browser) e a palavra-passe nunca é guardada.
 - **Chatbot**: faz keyword-matching contra a Knowledge Base e sugere a
   solução mais próxima.
 - **Pesquisa**: busca por título, descrição, solução ou tags.
-- **Novo Incidente**: formulário para registar manualmente um novo caso
-  resolvido, guardado direto no SQLite.
+- **Minha Fila**: lista os tickets (Remedy) atribuídos ao utilizador com
+  sessão iniciada (`GET /api/my-queue?user=ANUMBER`). Por enquanto mostra
+  dados de exemplo (tabela `tickets`, utilizador `DEMO`) até existir o
+  conector do Remedy; desligar com a variável `SHOW_DEMO_TICKETS=0`.
 - **Healthcheck**: indicador visual (verde/vermelho) da ligação ao backend.
 
 ## 4. Próximos passos sugeridos
 
 - Trocar o chatbot de keyword-matching por um LLM (ex: API da Anthropic)
   usando o conteúdo da Knowledge Base como contexto (RAG).
-- Adicionar autenticação (ex: SSO corporativo) antes de expor fora de
+- Validar no backend o token do autenticador em `/api/my-queue` (hoje o
+  utilizador vem da extensão sem verificação) antes de expor fora de
   localhost.
 - Criar os conectores de ETL para importar automaticamente dados do
   Remedy, GitLab e Service Desk (mencionados na arquitetura da proposta).
